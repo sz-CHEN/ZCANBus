@@ -1,0 +1,5 @@
+.idea
+.vs
+build
+*.txt
+!CMakeLists.txt

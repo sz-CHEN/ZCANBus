@@ -1,0 +1,51 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build debug",
+            "type": "shell",
+            "linux": {
+                "command": "mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../ && make",
+            },
+            "osx": {
+                "command": "mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ../ && make",
+            },
+            "windows": {
+                "command": "cd build && \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat\" amd64 && cmake -DCMAKE_BUILD_TYPE=Debug -G \"CodeBlocks - NMake Makefiles\" ../ && cmake --build ./ --target all --",
+            },
+            "args": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build release",
+            "type": "shell",
+            "linux": {
+                "command": "mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make",
+            },
+            "osx": {
+                "command": "mkdir -p build && cd build && cmake -DCMAKE_BUILD_TYPE=Release ../ && make",
+            },
+            "windows": {
+                "command": "cd build && \"C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community\\VC\\Auxiliary\\Build\\vcvarsall.bat\" amd64 && cmake -DCMAKE_BUILD_TYPE=Release -G \"CodeBlocks - NMake Makefiles\" ../ && cmake --build ./ --target all --",
+            },
+            "args": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always"
+            },
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}
