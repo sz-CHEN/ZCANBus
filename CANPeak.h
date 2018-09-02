@@ -4,7 +4,6 @@
 #include "CANBase.h"
 #ifdef __APPLE__
 #include <PCBUSB.h>
-#include <sys/select.h>
 #else
 #include <PCANBasic.h>
 #endif

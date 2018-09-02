@@ -1,5 +1,8 @@
 #include "CANPeak.h"
 #include <cstring>
+#ifdef __APPLE__
+#include <sys/select.h>
+#endif
 namespace ZCANBus {
 CANPeak::CANPeak() {}
 
