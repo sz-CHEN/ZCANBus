@@ -1,5 +1,6 @@
 #ifndef __CAN_TYPE_H
 #define __CAN_TYPE_H
+#include <cstdint>
 namespace ZCANBus {
 /**
  * The struct contains CAN message, CAN ID, message length, message type and
