@@ -95,7 +95,8 @@ void CANPeak::ReadLoop(
             timeval time;
             time.tv_sec = 0;
             time.tv_usec = interval * 1000;
-            if (select(evRecv + 1, &Fds, NULL, NULL, &time) > 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+            // if (select(evRecv + 1, &Fds, NULL, NULL, &time) > 0)
 #endif
             {
                 TPCANMsg buf;
