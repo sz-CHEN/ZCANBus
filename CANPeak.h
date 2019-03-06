@@ -20,10 +20,19 @@ class CANPeak : public CANBase {
     ~CANPeak();
     /**
      * @param channel
-     * @param type
+     * @param type Indicates HwType
      * @see <PCANBasic.h> CAN_Initialize
      */
     CANStatus OpenChannel(int channel, CANRate baudRate, int type = 0) override;
+
+    /**
+     * @param channel
+     * @param argv Indicates HwType, IOPort, Interrupt in CAN_Initialize.
+     * Default 0.
+     * @see <PCANBasic.h> CAN_Initialize
+     */
+    CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
+                          char* argv[]) override;
     void ReadLoop(
         std::function<void(const CANMessage* msg, CANStatus status)> callback,
         uint64_t interval) override;
@@ -34,5 +43,5 @@ class CANPeak : public CANBase {
     CANStatus FlushQueue() override;
     std::string GetErrorText(CANStatus& status) override;
 };
-}  // namespace CAN
+}  // namespace ZCANBus
 #endif

@@ -5,6 +5,11 @@ CANKvaser::CANKvaser() : loopOn(false) { canInitializeLibrary(); }
 CANKvaser::~CANKvaser() {}
 
 CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int type) {
+    return OpenChannel(channel, baudRate, 1, (char* []){(char*)&type});
+}
+
+CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int argc,
+                                 char* argv[]) {
     long freq = 0;
     switch (baudRate) {
         case CANRate::CAN_RATE_10K:
@@ -35,13 +40,38 @@ CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int type) {
             freq = canBITRATE_1M;
             break;
         default:
-            return canERR_NOTFOUND;
+            return canERR_PARAM;
     }
-    handle = canOpenChannel(channel, type);
+    int flags = 0;
+    unsigned int tseg1 = 0;
+    unsigned int tseg2 = 0;
+    unsigned int sjw = 0;
+    unsigned int noSamp = 0;
+    unsigned int syncmode = 0;
+    if (argc > 5) {
+        syncmode = *(unsigned int*)argv[5];
+    }
+    if (argc > 4) {
+        noSamp = *(unsigned int*)argv[4];
+    }
+    if (argc > 3) {
+        sjw = *(unsigned int*)argv[3];
+    }
+    if (argc > 2) {
+        tseg2 = *(unsigned int*)argv[2];
+    }
+    if (argc > 1) {
+        tseg1 = *(unsigned int*)argv[1];
+    }
+    if (argc > 0) {
+        flags = *(int*)argv[0];
+    }
+    handle = canOpenChannel(channel, flags);
     if (handle < 0) return handle;
     CANStatus stat = 0;
     do {
-        stat |= canSetBusParams(handle, freq, 0, 0, 0, 0, 0);
+        stat |=
+            canSetBusParams(handle, freq, tseg1, tseg2, sjw, noSamp, syncmode);
         stat |= canBusOn(handle);
     } while (false);
     return stat;

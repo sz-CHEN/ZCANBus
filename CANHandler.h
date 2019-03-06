@@ -36,7 +36,18 @@ class DLLEXPORT CANHandler {
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     CANStatus OpenChannel(int channel, CANRate baudRate, int type);
-    
+
+    /**
+     * @brief Open a specific channel
+     * @param channel the specific number for the CAN device
+     * @param baudRate the speed for the communication
+     * @param argc size of argv
+     * @param argv the specific params for specific device
+     * @return a error code. Generally, 0 means OK. @see CanStatus
+     */
+    CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
+                          char* argv[]);
+
     /**
      * @brief Read CAN message continuously with async mode.
      * @param callback the function will be called while received new CAN
@@ -48,10 +59,10 @@ class DLLEXPORT CANHandler {
     void ReadLoop(
         std::function<void(const CANMessage* msg, CANStatus status)> callback,
         uint64_t interval);
-    
+
     /**@brief End read CAN message continuously with async mode.*/
     void EndReadLoop();
-    
+
     /**
      * @brief Read CAN message once
      * @param msg Modified by received CAN message
@@ -59,26 +70,26 @@ class DLLEXPORT CANHandler {
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     CANStatus ReadOnce(CANMessage& msg, uint64_t timeout = 0);
-    
+
     /**
      * @brief Write CAN message once
      * @param msg the CAN message to be wrote
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     CANStatus Write(CANMessage* msg, int count);
-    
+
     /**
      * @brief Close the channel.
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     CANStatus CloseChannel();
-    
+
     /**
      * @brief Flush the data in queue.
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     CANStatus FlushQueue();
-    
+
     /**
      * @brief Get error message in detail.
      * @param status the error code. Modified by the new error code returned by

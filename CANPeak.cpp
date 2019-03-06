@@ -9,6 +9,11 @@ CANPeak::CANPeak() {}
 CANPeak::~CANPeak() {}
 
 CANStatus CANPeak::OpenChannel(int channel, CANRate baudRate, int type) {
+    return OpenChannel(channel, baudRate, 1, (char* []){(char*)&type});
+}
+
+CANStatus CANPeak::OpenChannel(int channel, CANRate baudRate, int argc,
+                               char* argv[]) {
     TPCANBaudrate freq = 0;
     switch (baudRate) {
         case CANRate::CAN_RATE_5K:
@@ -54,16 +59,28 @@ CANStatus CANPeak::OpenChannel(int channel, CANRate baudRate, int type) {
             freq = PCAN_BAUD_1M;
             break;
         default:
-            return PCAN_ERROR_UNKNOWN;
+            return PCAN_ERROR_ILLOPERATION;
     }
     this->channel = channel;
     unsigned int channelStatus;
     CANStatus stat = CAN_GetValue(channel, PCAN_CHANNEL_CONDITION,
                                   &channelStatus, sizeof(channelStatus));
     if (!(channelStatus & PCAN_CHANNEL_AVAILABLE)) {
-        return PCAN_ERROR_INITIALIZE;
+        return PCAN_ERROR_HWINUSE;
     }
-    return CAN_Initialize(channel, freq, type);
+    TPCANType hwType = 0;
+    DWORD IOPort = 0;
+    WORD interrupt = 0;
+    if (argc > 2) {
+        interrupt = *(WORD*)argv[2];
+    }
+    if (argc > 1) {
+        IOPort = *(DWORD*)argv[1];
+    }
+    if (argc > 0) {
+        hwType = *(TPCANType*)argv[0];
+    }
+    return CAN_Initialize(channel, freq, hwType, IOPort, interrupt);
 }
 
 void CANPeak::ReadLoop(

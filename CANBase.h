@@ -19,7 +19,20 @@ class CANBase {
      * @param type different CAN devices has differents meanings
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
-    virtual CANStatus OpenChannel(int channel, CANRate baudRate, int type) = 0;
+    virtual CANStatus OpenChannel(int channel, CANRate baudRate, int type) {
+        return OpenChannel(channel, baudRate, 1, (char* []){(char*)&type});
+    };
+
+    /**
+     * @brief Open a specific channel
+     * @param channel the specific number for the CAN device
+     * @param baudRate the speed for the communication
+     * @param argc size of argv
+     * @param argv the specific params for specific device
+     * @return a error code. Generally, 0 means OK. @see CanStatus
+     */
+    virtual CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
+                                  char* argv[]) = 0;
 
     /**
      * @brief Read CAN message continuously with async mode.

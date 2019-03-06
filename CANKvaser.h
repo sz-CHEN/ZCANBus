@@ -16,10 +16,19 @@ class CANKvaser : public CANBase {
     ~CANKvaser();
     /**
      * @param channel @see <canlib.h> canOpenChannel
-     * @param type @see <canlib.h> canOPEN_XXX
+     * @param type Indicates flags. @see <canlib.h> canOPEN_XXX
      */
     CANStatus OpenChannel(int channel, CANRate baudRate,
                           int type = canOPEN_ACCEPT_VIRTUAL) override;
+
+    /**
+     * @param channel Indicates @param channel in canOpenChannel
+     * @param argv Indicates @param flags in canOpenChannel and  tseg1, tseg2,
+     * sjw, noSamp, syncmode in canSetBusParams. Default 0.
+     * @see <canlib.h>
+     */
+    CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
+                          char* argv[]) override;
     void ReadLoop(
         std::function<void(const CANMessage* msg, CANStatus status)> callback,
         uint64_t interval) override;

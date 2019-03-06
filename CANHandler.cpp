@@ -16,6 +16,11 @@ CANStatus CANHandler::OpenChannel(int channel, CANRate baudRate, int type) {
     return baseCan->OpenChannel(channel, baudRate, type);
 }
 
+CANStatus CANHandler::OpenChannel(int channel, CANRate baudRate, int argc,
+                                  char *argv[]) {
+    return baseCan->OpenChannel(channel, baudRate, argc, argv);
+}
+
 void CANHandler::ReadLoop(
     std::function<void(const CANMessage *msg, CANStatus status)> callback,
     uint64_t interval) {
