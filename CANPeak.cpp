@@ -72,31 +72,29 @@ void CANPeak::ReadLoop(
     th = new std::thread([&, callback, interval]() -> void {
         loopOn = true;
         CANMessage msg;
-        CANStatus stat;
+        CANStatus stat = 0;
 #ifdef _WIN32
-        HANDLE evRecv;
-#elif defined(__linux__) || defined(__APPLE__)
-        int evRecv = 1;
-        fd_set Fds;
-#endif  // WIN32
-#ifdef _WIN32
-        evRecv = CreateEvent(NULL, FALSE, FALSE, NULL);
-// #endif // WIN32
-#elif defined(__linux__) || defined(__APPLE__)
-        FD_ZERO(&Fds);
-        FD_SET(evRecv, &Fds);
-#endif
+        HANDLE evRecv = CreateEvent(NULL, FALSE, FALSE, NULL);
         stat =
             CAN_SetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
+#elif defined(__linux__) || defined(__APPLE__)
+        int evRecv = 0;
+        stat =
+            CAN_GetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
+        fd_set fds;
+#endif  // WIN32
         while (loopOn) {
 #ifdef _WIN32
             if (WaitForSingleObject(evRecv, interval) == WAIT_OBJECT_0)
 #elif defined(__linux__) || defined(__APPLE__)
-            timeval time;
+            struct timeval time;
             time.tv_sec = 0;
             time.tv_usec = interval * 1000;
-            std::this_thread::sleep_for(std::chrono::milliseconds(interval));
-            // if (select(evRecv + 1, &Fds, NULL, NULL, &time) > 0)
+            FD_ZERO(&fds);
+            FD_SET(evRecv, &fds);
+            // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+            if (select(evRecv + 1, &fds, NULL, NULL, &time) > 0 &&
+                FD_ISSET(evRecv, &fds))
 #endif
             {
                 TPCANMsg buf;
@@ -126,41 +124,39 @@ void CANPeak::EndReadLoop() {
 }
 
 CANStatus CANPeak::ReadOnce(CANMessage& msg, uint64_t timeout) {
-#ifdef WIN32
-    HANDLE evRecv;
-#elif defined(__linux__) || defined(__APPLE__)
-    int evRecv = 1;
-    fd_set Fds;
-#endif  // WIN32
-#ifdef WIN32
-    evRecv = CreateEvent(NULL, FALSE, FALSE, NULL);
-// #endif // WIN32
-#elif defined(__linux__) || defined(__APPLE__)
-    FD_ZERO(&Fds);
-    FD_SET(evRecv, &Fds);
-#endif
-    CANStatus status =
-        CAN_SetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
+    CANStatus stat = 0;
 #ifdef _WIN32
-    if (WaitForSingleObject(evRecv, timeout) == WAIT_OBJECT_0)
+    HANDLE evRecv = CreateEvent(NULL, FALSE, FALSE, NULL);
+    stat = CAN_SetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
 #elif defined(__linux__) || defined(__APPLE__)
-    timeval time;
+    int evRecv = 0;
+    stat = CAN_GetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
+    fd_set fds;
+#endif  // WIN32
+#ifdef _WIN32
+    if (WaitForSingleObject(evRecv, interval) == WAIT_OBJECT_0)
+#elif defined(__linux__) || defined(__APPLE__)
+    struct timeval time;
     time.tv_sec = 0;
     time.tv_usec = timeout * 1000;
-    if (select(evRecv + 1, &Fds, NULL, NULL, &time) > 0)
+    FD_ZERO(&fds);
+    FD_SET(evRecv, &fds);
+    // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+    if (select(evRecv + 1, &fds, NULL, NULL, &time) > 0 &&
+        FD_ISSET(evRecv, &fds))
 #endif
     {
         TPCANMsg buf;
         TPCANTimestamp timeStamp;
-        status = CAN_Read(channel, &buf, &timeStamp);
-        if (status == PCAN_ERROR_OK) {
+        stat = CAN_Read(channel, &buf, &timeStamp);
+        if (stat == PCAN_ERROR_OK) {
             msg.id = buf.ID;
             msg.length = buf.LEN;
             msg.type = buf.MSGTYPE;
             msg.timestamp = timeStamp.millis;
             memcpy(msg.msg, buf.DATA, msg.length);
         }
-        return status;
+        return stat;
     }
     return PCAN_ERROR_QRCVEMPTY;
 }
