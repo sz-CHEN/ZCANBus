@@ -94,24 +94,28 @@ void CANPeak::ReadLoop(
         HANDLE evRecv = CreateEvent(NULL, FALSE, FALSE, NULL);
         stat =
             CAN_SetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
-#elif defined(__linux__) || defined(__APPLE__)
+#elif __linux__ || __APPLE__ || __unix__
         int evRecv = 0;
         stat =
             CAN_GetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
         fd_set fds;
+#else
+#error Unsupported OS
 #endif  // WIN32
         while (loopOn) {
 #ifdef _WIN32
             if (WaitForSingleObject(evRecv, interval) == WAIT_OBJECT_0)
-#elif defined(__linux__) || defined(__APPLE__)
+#elif __linux__ || __APPLE__ || __unix__
             struct timeval time;
             time.tv_sec = 0;
             time.tv_usec = interval * 1000;
             FD_ZERO(&fds);
             FD_SET(evRecv, &fds);
-            // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
             if (select(evRecv + 1, &fds, NULL, NULL, &time) > 0 &&
                 FD_ISSET(evRecv, &fds))
+#else
+#warning Unsupported OS
+            std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 #endif
             {
                 TPCANMsg buf;
@@ -145,14 +149,11 @@ CANStatus CANPeak::ReadOnce(CANMessage& msg, uint64_t timeout) {
 #ifdef _WIN32
     HANDLE evRecv = CreateEvent(NULL, FALSE, FALSE, NULL);
     stat = CAN_SetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
-#elif defined(__linux__) || defined(__APPLE__)
+    if (WaitForSingleObject(evRecv, interval) == WAIT_OBJECT_0)
+#elif __linux__ || __APPLE__ || __unix__
     int evRecv = 0;
     stat = CAN_GetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
     fd_set fds;
-#endif  // WIN32
-#ifdef _WIN32
-    if (WaitForSingleObject(evRecv, interval) == WAIT_OBJECT_0)
-#elif defined(__linux__) || defined(__APPLE__)
     struct timeval time;
     time.tv_sec = 0;
     time.tv_usec = timeout * 1000;
@@ -161,6 +162,9 @@ CANStatus CANPeak::ReadOnce(CANMessage& msg, uint64_t timeout) {
     // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     if (select(evRecv + 1, &fds, NULL, NULL, &time) > 0 &&
         FD_ISSET(evRecv, &fds))
+#else
+#warning Unsupported OS
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
 #endif
     {
         TPCANMsg buf;
