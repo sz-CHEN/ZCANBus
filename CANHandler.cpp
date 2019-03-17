@@ -10,6 +10,12 @@
 #ifdef USE_KVASER
 #include "CANKvaser.h"
 #endif
+#ifdef USE_ZLG
+#include "CANZLG.h"
+#endif
+#ifdef USE_ZLG_2
+#include "CANZLG2.h"
+#endif
 
 namespace ZCANBus {
 CANStatus CANHandler::OpenChannel(int channel, CANRate baudRate, int type) {
@@ -33,6 +39,10 @@ CANStatus CANHandler::ReadOnce(CANMessage &msg, uint64_t timeout) {
     return baseCan->ReadOnce(msg);
 }
 
+CANStatus CANHandler::Write(const CANMessage &msg) {
+    return baseCan->Write(msg);
+};
+
 CANStatus CANHandler::Write(CANMessage *msg, int count) {
     return baseCan->Write(msg, count);
 }
@@ -55,6 +65,16 @@ CANHandler::CANHandler(CANType canType) {
 #ifdef USE_KVASER
         case CANType::KVASER_CAN:
             baseCan = new CANKvaser();
+            break;
+#endif
+#ifdef USE_ZLG
+        case CANType::ZLG_CAN:
+            baseCan = new CANZLG();
+            break;
+#endif
+#ifdef USE_ZLG_2
+        case CANType::ZLG_2_CAN:
+            baseCan = new CANZLG2();
             break;
 #endif
         default:

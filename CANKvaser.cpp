@@ -5,7 +5,8 @@ CANKvaser::CANKvaser() : loopOn(false) { canInitializeLibrary(); }
 CANKvaser::~CANKvaser() {}
 
 CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int type) {
-    return OpenChannel(channel, baudRate, 1, (char* []){(char*)&type});
+        char* argv[]={(char*)&type};
+        return OpenChannel(channel, baudRate, 1, argv);
 }
 
 CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int argc,
@@ -102,6 +103,12 @@ CANStatus CANKvaser::ReadOnce(CANMessage& msg, uint64_t timeout) {
     return canReadWait(handle, &msg.id, msg.msg, &msg.length, &msg.type,
                        &msg.timestamp, timeout);
 }
+
+CANStatus CANKvaser::Write(const CANMessage& msg) {
+    return canWriteWait(handle, msg.id, (void*)msg.msg, msg.length, msg.type,
+                        0xFF);
+    ;
+};
 
 CANStatus CANKvaser::Write(CANMessage* msg, int count) {
     CANStatus status = 0;

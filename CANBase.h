@@ -20,7 +20,8 @@ class CANBase {
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     virtual CANStatus OpenChannel(int channel, CANRate baudRate, int type) {
-        return OpenChannel(channel, baudRate, 1, (char* []){(char*)&type});
+        char* argv[]={(char*)&type};
+        return OpenChannel(channel, baudRate, 1, argv);
     };
 
     /**
@@ -60,6 +61,14 @@ class CANBase {
     /**
      * @brief Write CAN message once
      * @param msg the CAN message to be wrote
+     * @return a error code. Generally, 0 means OK. @see CanStatus
+     */
+    virtual CANStatus Write(const CANMessage& msg) = 0;
+    
+    /**
+     * @brief Write CAN message once
+     * @param msg the pointer of the CAN messages array to be wrote
+     * @param count the msg count
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     virtual CANStatus Write(CANMessage* msg, int count) = 0;

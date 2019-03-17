@@ -18,7 +18,7 @@ namespace ZCANBus {
  * @see <PCANBasic.h>
  * @see <canlib.h>
  */
-enum class CANType { PEAK_CAN, KVASER_CAN };
+enum class CANType { PEAK_CAN, KVASER_CAN, ZLG_CAN, ZLG_2_CAN };
 class CANBase;
 class DLLEXPORT CANHandler {
    private:
@@ -74,6 +74,14 @@ class DLLEXPORT CANHandler {
     /**
      * @brief Write CAN message once
      * @param msg the CAN message to be wrote
+     * @return a error code. Generally, 0 means OK. @see CanStatus
+     */
+    CANStatus Write(const CANMessage& msg);
+
+    /**
+     * @brief Write CAN message once
+     * @param msg the pointer of the CAN messages array to be wrote
+     * @param count the msg count
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     CANStatus Write(CANMessage* msg, int count);

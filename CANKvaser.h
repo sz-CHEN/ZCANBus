@@ -34,6 +34,7 @@ class CANKvaser : public CANBase {
         uint64_t interval) override;
     void EndReadLoop() override;
     CANStatus ReadOnce(CANMessage& msg, uint64_t timeout) override;
+    CANStatus Write(const CANMessage& msg) override;
     CANStatus Write(CANMessage* msg, int count) override;
     CANStatus CloseChannel() override;
     CANStatus FlushQueue() override;

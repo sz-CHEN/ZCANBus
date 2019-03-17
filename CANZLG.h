@@ -1,23 +1,22 @@
 #pragma once
-#ifndef __CANBase_Peak_H
-#define __CANBase_Peak_H
-#include "CANBase.h"
-#ifdef __APPLE__
-#include <PCBUSB.h>
-#else
-#include <PCANBasic.h>
-#endif
+#ifndef __CANBase_ZLG_H
+#define __CANBase_ZLG_H
+#include <controlcan.h>
 #include <thread>
+#include "CANBase.h"
+
 namespace ZCANBus {
-class CANPeak : public CANBase {
+class CANZLG : public CANBase {
    private:
     std::thread* th;
-    int channel;
     bool loopOn;
+    UINT can_index = 0;
+    UINT device_index = 0;
+    UINT device_type = 0;
 
    public:
-    CANPeak();
-    ~CANPeak();
+    CANZLG();
+    ~CANZLG();
     /**
      * @param channel
      * @param type Indicates HwType

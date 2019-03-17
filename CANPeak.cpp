@@ -9,7 +9,8 @@ CANPeak::CANPeak() {}
 CANPeak::~CANPeak() {}
 
 CANStatus CANPeak::OpenChannel(int channel, CANRate baudRate, int type) {
-    return OpenChannel(channel, baudRate, 1, (char* []){(char*)&type});
+        char* argv[]={(char*)&type};
+        return OpenChannel(channel, baudRate, 1, argv);
 }
 
 CANStatus CANPeak::OpenChannel(int channel, CANRate baudRate, int argc,
@@ -100,7 +101,7 @@ void CANPeak::ReadLoop(
             CAN_GetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
         fd_set fds;
 #else
-#error Unsupported OS
+#warning Unsupported OS
 #endif  // WIN32
         while (loopOn) {
 #ifdef _WIN32
@@ -180,6 +181,14 @@ CANStatus CANPeak::ReadOnce(CANMessage& msg, uint64_t timeout) {
         return stat;
     }
     return PCAN_ERROR_QRCVEMPTY;
+}
+CANStatus CANPeak::Write(const CANMessage& msg) {
+    TPCANMsg message;
+    message.ID = msg.id;
+    message.LEN = msg.length;
+    message.MSGTYPE = msg.type;
+    memcpy(message.DATA, msg.msg, msg.length);
+    return CAN_Write(channel, &message);
 }
 
 CANStatus CANPeak::Write(CANMessage* msg, int count) {
