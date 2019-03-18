@@ -13,7 +13,7 @@
 #ifdef USE_ZLG
 #include "CANZLG.h"
 #endif
-#ifdef USE_ZLG_2
+#ifdef USE_ZLG2
 #include "CANZLG2.h"
 #endif
 
@@ -72,13 +72,13 @@ CANHandler::CANHandler(CANType canType) {
             baseCan = new CANZLG();
             break;
 #endif
-#ifdef USE_ZLG_2
+#ifdef USE_ZLG2
         case CANType::ZLG_2_CAN:
             baseCan = new CANZLG2();
             break;
 #endif
         default:
-            throw;
+            throw "Unsupported CANType";
     }
 }
 

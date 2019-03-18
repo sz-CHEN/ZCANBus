@@ -18,7 +18,7 @@ namespace ZCANBus {
  * @see <PCANBasic.h>
  * @see <canlib.h>
  */
-enum class CANType { PEAK_CAN, KVASER_CAN, ZLG_CAN, ZLG_2_CAN };
+enum class CANType { PEAK_CAN, KVASER_CAN, ZLG_CAN, ZLG2_CAN };
 class CANBase;
 class DLLEXPORT CANHandler {
    private:
