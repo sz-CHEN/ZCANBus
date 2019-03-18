@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 # set(USE_ZLG true)
 
-# set(USE_ZLG_2 true)
+# set(USE_ZLG2 true)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(_COMPILER_ARCHITECTURE x64)
@@ -109,7 +109,7 @@ endif()
 
 if(CMAKE_HOST_UNIX)
   link_libraries(pthread)
-  list(APPEND ZCANBus_LINK_LIB_TMP pthread)
 endif(CMAKE_HOST_UNIX)
+
 set(CMAKE_DEBUG_POSTFIX _d)
 add_library(${PROJECT_NAME} ${CAN_FILE})
