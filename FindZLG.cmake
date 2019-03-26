@@ -1,6 +1,6 @@
 if(CMAKE_HOST_WIN32)
 find_path(ZLG_INCLUDE_DIR controlcan.h PATH_SUFFIXES ZLG)
-find_library(ZLG_LIBS NAMES canlib32 PATH_SUFFIXES MS x64)
+find_library(ZLG_LIBS NAMES usbcan PATH_SUFFIXES MS x64 x86 win32)
 elseif(CMAKE_HOST_UNIX)
 find_path(ZLG_INCLUDE_DIR NAMES controlcan.h PATH_SUFFIXES ZLG)
 find_library(ZLG_LIBS NAMES usbcan)
