@@ -12,11 +12,11 @@ CANStatus CANZLG::OpenChannel(int channel, CANRate baudRate, int type) {
 
 CANStatus CANZLG::OpenChannel(int channel, CANRate baudRate, int argc,
                               char* argv[]) {
-    if (argc > 2) {
-        can_index = *(UINT*)argv[2];
-    }
+    can_index = 0;
+    device_index = channel;
+    device_type = 0;
     if (argc > 1) {
-        device_index = *(UINT*)argv[1];
+        can_index = *(UINT*)argv[1];
     }
     if (argc > 0) {
         device_type = *(UINT*)argv[0];

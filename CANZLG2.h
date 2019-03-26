@@ -16,17 +16,17 @@ class CANZLG2 : public CANBase {
     CANZLG2();
     ~CANZLG2();
     /**
-     * @param channel
-     * @param type Indicates HwType
-     * @see <PCANBasic.h> CAN_Initialize
+     * @param channel Indicates device_index
+     * @param type Indicates device_type
+     * @see <zlgcan.h> 
      */
     CANStatus OpenChannel(int channel, CANRate baudRate, int type = 0) override;
 
     /**
-     * @param channel
-     * @param argv Indicates HwType, IOPort, Interrupt in CAN_Initialize.
+     * @param channel Indicates device_index
+     * @param argv Indicates device_type, can_index.
      * Default 0.
-     * @see <PCANBasic.h> CAN_Initialize
+     * @see <zlgcan.h> 
      */
     CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
                           char* argv[]) override;
