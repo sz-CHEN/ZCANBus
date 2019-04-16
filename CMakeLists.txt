@@ -3,13 +3,21 @@ project(ZCANBus)
 
 set(CMAKE_CXX_STANDARD 11)
 
-# set(USE_PEAK true)
+# set(PEAK_WANTED true)
 
-# set(USE_KVASER true)
+# set(KVASER_WANTED true)
 
-# set(USE_ZLG true)
+# set(ZLG_WANTED true)
 
-# set(USE_ZLG2 true)
+# set(ZLG2_WANTED true)
+
+# set(PEAK_UNWANTED true)
+
+# set(KVASER_UNWANTED true)
+
+# set(ZLG_UNWANTED true)
+
+# set(ZLG2_UNWANTED true)
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(_COMPILER_ARCHITECTURE x64)
@@ -22,10 +30,31 @@ set(CAN_FILE CANHandler.cpp)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 
-find_package(Peak)
-find_package(Kvaser)
-find_package(ZLG)
-find_package(ZLG2)
+if(PEAK_WANTED)
+set(PEAK_REQUIRED REQUIRED)
+endif()
+if(KVASER_WANTED)
+set(KVASER_REQUIRED REQUIRED)
+endif()
+if(ZLG_WANTED)
+set(ZLG_REQUIRED REQUIRED)
+endif()
+if(ZLG2_WANTED)
+set(ZLG2_REQUIRED REQUIRED)
+endif()
+
+if(NOT PEAK_UNWANTED)
+find_package(Peak ${PEAK_REQUIRED})
+endif()
+if(NOT KVASER_UNWANTED)
+find_package(Kvaser ${KVASER_REQUIRED})
+endif()
+if(NOT ZLG_UNWANTED)
+find_package(ZLG ${ZLG_REQUIRED})
+endif()
+if(NOT ZLG2_UNWANTED)
+find_package(ZLG2 ${ZLG2_REQUIRED})
+endif()
 
 if(Peak_FOUND)
 add_definitions(-DUSE_PEAK)
@@ -59,5 +88,5 @@ if(CMAKE_HOST_UNIX)
   link_libraries(pthread)
 endif(CMAKE_HOST_UNIX)
 
-set(CMAKE_DEBUG_POSTFIX _d)
+# set(CMAKE_DEBUG_POSTFIX _d)
 add_library(${PROJECT_NAME} ${CAN_FILE})

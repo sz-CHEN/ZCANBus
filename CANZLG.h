@@ -18,15 +18,15 @@ class CANZLG : public CANBase {
     CANZLG();
     ~CANZLG();
     /**
-     * @param channel Indicates device_index
+     * @param channel Indicates can_index
      * @param type Indicates device_type
      * @see <controlcan.h>
      */
     CANStatus OpenChannel(int channel, CANRate baudRate, int type = 0) override;
 
     /**
-     * @param channel Indicates device_index
-     * @param argv Indicates device_type, can_index.
+     * @param channel Indicates can_index
+     * @param argv Indicates device_type, device_index.
      * Default 0.
      * @see <controlcan.h>
      */
