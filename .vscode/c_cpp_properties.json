@@ -3,91 +3,39 @@
         {
             "name": "Mac",
             "includePath": [
-                "/usr/include",
-                "/usr/local/include",
-                "${workspaceFolder}",
-                "${workspaceFolder}/include",
-                "${workspaceFolder}/include/unix"
+                "${workspaceFolder}/**"
             ],
             "defines": [],
-            "intelliSenseMode": "clang-x64",
-            "browse": {
-                "path": [
-                    "/usr/include",
-                    "/usr/local/include",
-                    "${workspaceFolder}",
-                    "${workspaceFolder}/include",
-                    "${workspaceFolder}/include/unix"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
-            },
-            "macFrameworkPath": [
-                "/System/Library/Frameworks",
-                "/Library/Frameworks"
-            ],
-            "cStandard": "c11",
-            "cppStandard": "c++17"
+            "macFrameworkPath": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c99",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "clang-x64"
         },
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}",
-                "/usr/include/c++/7",
-                "/usr/include/x86_64-linux-gnu/c++/7",
-                "/usr/include/c++/7/backward",
-                "/usr/lib/llvm-6.0/lib/clang/6.0.0/include",
-                "/usr/local/include",
-                "/usr/include/x86_64-linux-gnu",
-                "/usr/include",
-                "${workspaceFolder}/include",
-                "${workspaceFolder}/include/unix"
+                "${workspaceFolder}/**"
             ],
             "defines": [],
-            "intelliSenseMode": "clang-x64",
-            "browse": {
-                "path": [
-                    "${workspaceFolder}",
-                    "/usr/include/c++/7",
-                    "/usr/include/x86_64-linux-gnu/c++/7",
-                    "/usr/include/c++/7/backward",
-                    "/usr/lib/llvm-6.0/lib/clang/6.0.0/include",
-                    "/usr/local/include",
-                    "/usr/include/x86_64-linux-gnu",
-                    "/usr/include",
-                    "${workspaceFolder}/include",
-                    "${workspaceFolder}/include/unix"
-                ],
-                "limitSymbolsToIncludedHeaders": true,
-                "databaseFilename": ""
-            },
-            "compilerPath": "/usr/bin/clang",
-            "cStandard": "c11",
-            "cppStandard": "c++11"
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c99",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "gcc-x64"
         },
         {
             "name": "Win32",
-            "browse": {
-                "path": [
-                    "${workspaceFolder}",
-                    "${workspaceFolder}/include",
-                    "${workspaceFolder}/include/win32"
-                ],
-                "limitSymbolsToIncludedHeaders": true
-            },
             "includePath": [
-                "${workspaceFolder}",
-                "${workspaceFolder}/include",
-                "${workspaceFolder}/include/win32"
+                "${workspaceFolder}/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
-            "cStandard": "c11",
-            "intelliSenseMode": "msvc-x64",
-            "cppStandard": "c++14"
+            "cStandard": "c99",
+            "cppStandard": "c++11",
+            "intelliSenseMode": "msvc-x64"
         }
     ],
     "version": 4

@@ -4,3 +4,5 @@ build
 *.txt
 .DS_Store
 !CMakeLists.txt
+*.ipch
+mmap_address.bin
