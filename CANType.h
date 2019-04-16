@@ -2,6 +2,18 @@
 #define __CAN_TYPE_H
 #include <cstdint>
 namespace ZCANBus {
+
+enum class CANMSGType : unsigned int {
+    STANDARD = 0,
+    RTR = 1,
+    EXTENDED = 1 << 1,
+    FD = 1 << 2,
+    BRS = 1 << 3,
+    ESI = 1 << 4,
+    ERRFRAME = 1 << 6,
+    UNKNOWN = 1 << 7
+};
+
 /**
  * The struct contains CAN message, CAN ID, message length, message type and
  * timestamp

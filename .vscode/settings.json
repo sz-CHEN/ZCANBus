@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.m": "matlab",
         "__locale": "cpp",
         "__string": "cpp",
         "string": "cpp",
@@ -18,6 +19,10 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "iterator": "cpp",
+        "array": "cpp",
+        "istream": "cpp",
+        "ostream": "cpp"
     }
 }

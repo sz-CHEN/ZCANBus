@@ -148,7 +148,13 @@ void CANZLG::ReadLoop(
                 msg.timestamp = data.TimeStamp;
                 msg.length = data.DataLen;
                 msg.id = data.ID;
-                msg.type = data.ExternFlag;
+                msg.type = (unsigned int)CANMSGType::STANDARD;
+                if (data.ExternFlag) {
+                    msg.type |= (unsigned int)CANMSGType::EXTENDED;
+                }
+                if (data.RemoteFlag) {
+                    msg.type |= (unsigned int)CANMSGType::RTR;
+                }
                 memcpy(msg.msg, data.Data, msg.length);
                 callback(&msg, 0);
             } else if (stat < 0) {
@@ -177,7 +183,13 @@ CANStatus CANZLG::ReadOnce(CANMessage& msg, uint64_t timeout) {
         msg.timestamp = data.TimeStamp;
         msg.length = data.DataLen;
         msg.id = data.ID;
-        msg.type = data.ExternFlag;
+        msg.type = (unsigned int)CANMSGType::STANDARD;
+        if (data.ExternFlag) {
+            msg.type |= (unsigned int)CANMSGType::EXTENDED;
+        }
+        if (data.RemoteFlag) {
+            msg.type |= (unsigned int)CANMSGType::RTR;
+        }
         memcpy(msg.msg, data.Data, msg.length);
         return 0;
     } else if (stat < 0) {
@@ -197,8 +209,16 @@ CANStatus CANZLG::Write(const CANMessage& msg) {
     data.SendType = 0;
     data.ID = msg.id;
     data.DataLen = msg.length;
-    data.RemoteFlag = 0;
-    data.ExternFlag = msg.type;
+    if (msg.type & (unsigned int)CANMSGType::RTR) {
+        data.RemoteFlag = 1;
+    } else {
+        data.RemoteFlag = 0;
+    }
+    if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
+        data.ExternFlag = 1;
+    } else {
+        data.ExternFlag = 0;
+    }
     memcpy(data.Data, msg.msg, msg.length);
     CANStatus stat =
         VCI_Transmit(device_type, device_index, can_index, &data, 1);
@@ -222,8 +242,16 @@ CANStatus CANZLG::Write(CANMessage* msg, int count) {
         data[i].SendType = 0;
         data[i].ID = msg[i].id;
         data[i].DataLen = msg[i].length;
-        data[i].RemoteFlag = 0;
-        data[i].ExternFlag = msg[i].type;
+        if (msg.type & (unsigned int)CANMSGType::RTR) {
+            data.RemoteFlag = 1;
+        } else {
+            data.RemoteFlag = 0;
+        }
+        if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
+            data.ExternFlag = 1;
+        } else {
+            data.ExternFlag = 0;
+        }
         memcpy(data[i].Data, msg[i].msg, msg[i].length);
     }
     CANStatus stat =

@@ -5,8 +5,8 @@ CANKvaser::CANKvaser() : loopOn(false) { canInitializeLibrary(); }
 CANKvaser::~CANKvaser() {}
 
 CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int type) {
-        char* argv[]={(char*)&type};
-        return OpenChannel(channel, baudRate, 1, argv);
+    char* argv[] = {(char*)&type};
+    return OpenChannel(channel, baudRate, 1, argv);
 }
 
 CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int argc,
@@ -88,6 +88,32 @@ void CANKvaser::ReadLoop(
         while (loopOn) {
             stat = canReadWait(handle, &msg.id, msg.msg, &msg.length, &msg.type,
                                &msg.timestamp, interval);
+            unsigned int type = (unsigned int)CANMSGType::STANDARD;
+            if (msg.type & canMSG_EXT) {
+                type |= (unsigned int)CANMSGType::EXTENDED;
+                msg.type &= ~canMSG_EXT;
+            }
+            if (msg.type & canMSG_RTR) {
+                type |= (unsigned int)CANMSGType::RTR;
+                msg.type &= ~canMSG_RTR;
+            }
+            if (msg.type & canMSG_ERROR_FRAME) {
+                type |= (unsigned int)CANMSGType::ERRFRAME;
+                msg.type &= ~canMSG_ERROR_FRAME;
+            }
+            if (msg.type & canFDMSG_FDF) {
+                type |= (unsigned int)CANMSGType::FD;
+                msg.type &= ~canFDMSG_FDF;
+            }
+            if (msg.type & canFDMSG_BRS) {
+                type |= (unsigned int)CANMSGType::BRS;
+                msg.type &= ~canFDMSG_BRS;
+            }
+            if (msg.type & canFDMSG_ESI) {
+                type |= (unsigned int)CANMSGType::ESI;
+                msg.type &= ~canFDMSG_ESI;
+            }
+            msg.type = type;
             callback(&msg, stat);
         }
     });
@@ -100,21 +126,64 @@ void CANKvaser::EndReadLoop() {
 }
 
 CANStatus CANKvaser::ReadOnce(CANMessage& msg, uint64_t timeout) {
-    return canReadWait(handle, &msg.id, msg.msg, &msg.length, &msg.type,
-                       &msg.timestamp, timeout);
+    auto&& status = canReadWait(handle, &msg.id, msg.msg, &msg.length,
+                                &msg.type, &msg.timestamp, timeout);
+    unsigned int type = (unsigned int)CANMSGType::STANDARD;
+    if (msg.type & canMSG_EXT) {
+        type |= (unsigned int)CANMSGType::EXTENDED;
+        msg.type &= ~canMSG_EXT;
+    }
+    if (msg.type & canMSG_RTR) {
+        type |= (unsigned int)CANMSGType::RTR;
+        msg.type &= ~canMSG_RTR;
+    }
+    if (msg.type & canMSG_ERROR_FRAME) {
+        type |= (unsigned int)CANMSGType::ERRFRAME;
+        msg.type &= ~canMSG_ERROR_FRAME;
+    }
+    if (msg.type & canFDMSG_FDF) {
+        type |= (unsigned int)CANMSGType::FD;
+        msg.type &= ~canFDMSG_FDF;
+    }
+    if (msg.type & canFDMSG_BRS) {
+        type |= (unsigned int)CANMSGType::BRS;
+        msg.type &= ~canFDMSG_BRS;
+    }
+    if (msg.type & canFDMSG_ESI) {
+        type |= (unsigned int)CANMSGType::ESI;
+        msg.type &= ~canFDMSG_ESI;
+    }
+    msg.type = type;
+    return status;
 }
 
 CANStatus CANKvaser::Write(const CANMessage& msg) {
-    return canWriteWait(handle, msg.id, (void*)msg.msg, msg.length, msg.type,
-                        0xFF);
-    ;
+    unsigned int flag = (unsigned int)CANMSGType::STANDARD;
+    if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
+        flag |= canMSG_EXT;
+    }
+    if (msg.type & (unsigned int)CANMSGType::RTR) {
+        flag |= canMSG_RTR;
+    }
+    if (msg.type & (unsigned int)CANMSGType::ERRFRAME) {
+        flag |= canMSG_ERROR_FRAME;
+    }
+    if (msg.type & (unsigned int)CANMSGType::FD) {
+        flag |= canFDMSG_FDF;
+    }
+    if (msg.type & (unsigned int)CANMSGType::BRS) {
+        flag |= canFDMSG_BRS;
+    }
+    if (msg.type & (unsigned int)CANMSGType::ESI) {
+        flag |= canFDMSG_ESI;
+    }
+    return canWriteWait(handle, msg.id, (void*)msg.msg, msg.length, flag, 0xFF);
 };
 
 CANStatus CANKvaser::Write(CANMessage* msg, int count) {
     CANStatus status = 0;
     for (int i = 0; i < count; ++i) {
-        status |= canWriteWait(handle, msg[i].id, msg[i].msg, msg[i].length,
-                               msg[i].type, 0xFF);
+        status |= Write(msg[i]);
     }
     return status;
 }

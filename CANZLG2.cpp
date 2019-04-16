@@ -186,7 +186,18 @@ void CANZLG2::ReadLoop(
                 msg.timestamp = data.timestamp;
                 msg.length = data.frame.can_dlc;
                 msg.id = data.frame.can_id & 0x1FFFFFFF;
-                msg.type = (data.frame.can_id >> 29) & 0x7F;
+                msg.type = (data.frame.can_id >> 29) & 0x07;
+                unsigned int type = (unsigned int)CANMSGType::STANDARD;
+                if (msg.type & 1) {
+                    type |= (unsigned int)CANMSGType::ERRFRAME;
+                }
+                if (msg.type & (1 << 1)) {
+                    type |= (unsigned int)CANMSGType::RTR;
+                }
+                if (msg.type & (1 << 2)) {
+                    type |= (unsigned int)CANMSGType::EXTENDED;
+                }
+                msg.type = type;
                 memcpy(msg.msg, data.frame.data, msg.length);
                 callback(&msg, 0);
             } else if (stat < 0) {
@@ -214,7 +225,18 @@ CANStatus CANZLG2::ReadOnce(CANMessage& msg, uint64_t timeout) {
         msg.timestamp = data.timestamp;
         msg.length = data.frame.can_dlc;
         msg.id = data.frame.can_id & 0x1FFFFFFF;
-        msg.type = (data.frame.can_id >> 29) & 0x7F;
+        msg.type = (data.frame.can_id >> 29) & 0x07;
+        unsigned int type = (unsigned int)CANMSGType::STANDARD;
+        if (msg.type & 1) {
+            type |= (unsigned int)CANMSGType::ERRFRAME;
+        }
+        if (msg.type & (1 << 1)) {
+            type |= (unsigned int)CANMSGType::RTR;
+        }
+        if (msg.type & (1 << 2)) {
+            type |= (unsigned int)CANMSGType::EXTENDED;
+        }
+        msg.type = type;
         memcpy(msg.msg, data.frame.data, msg.length);
         return 0;
     } else if (stat < 0) {
@@ -229,9 +251,19 @@ CANStatus CANZLG2::ReadOnce(CANMessage& msg, uint64_t timeout) {
 }
 
 CANStatus CANZLG2::Write(const CANMessage& msg) {
+    uint8_t flag = 0;
+    if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
+        flag |= 1 << 2;
+    }
+    if (msg.type & (unsigned int)CANMSGType::RTR) {
+        flag |= 1 << 1;
+    }
+    if (msg.type & (unsigned int)CANMSGType::ERRFRAME) {
+        flag |= 1;
+    }
     ZCAN_Transmit_Data data;
     data.transmit_type = 0;
-    data.frame.can_id = (msg.id & 0x1FFFFFFF) | ((msg.type & (0x7F)) << 29);
+    data.frame.can_id = (msg.id & 0x1FFFFFFF) | ((flag & (0x07)) << 29);
     data.frame.can_dlc = msg.length;
     memcpy(data.frame.data, msg.msg, msg.length);
     auto stat = ZCAN_Transmit(chandle, &data, 1);
@@ -251,9 +283,18 @@ CANStatus CANZLG2::Write(const CANMessage& msg) {
 CANStatus CANZLG2::Write(CANMessage* msg, int count) {
     ZCAN_Transmit_Data* data = new ZCAN_Transmit_Data[count];
     for (int i = 0; i < count; i++) {
+        uint8_t flag = 0;
+        if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
+            flag |= 1 << 2;
+        }
+        if (msg.type & (unsigned int)CANMSGType::RTR) {
+            flag |= 1 << 1;
+        }
+        if (msg.type & (unsigned int)CANMSGType::ERRFRAME) {
+            flag |= 1;
+        }
         data[i].transmit_type = 0;
-        data[i].frame.can_id =
-            (msg[i].id & 0x1FFFFFFF) | ((msg[i].type & (0x7F)) << 29);
+        data[i].frame.can_id = (msg.id & 0x1FFFFFFF) | ((flag & (0x07)) << 29);
         data[i].frame.can_dlc = msg[i].length;
         memcpy(data[i].frame.data, msg[i].msg, msg[i].length);
     }
