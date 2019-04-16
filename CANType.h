@@ -32,25 +32,25 @@ typedef struct {
  * channel.
  * */
 enum class CANRate : int {
-    CAN_RATE_5K = 0,
-    CAN_RATE_10K,
-    CAN_RATE_20K,
-    CAN_RATE_33K,
-    CAN_RATE_40K,
-    CAN_RATE_47K,
-    CAN_RATE_50K,
-    CAN_RATE_62K,
-    CAN_RATE_80K,
-    CAN_RATE_83K,
-    CAN_RATE_95K,
-    CAN_RATE_100K,
-    CAN_RATE_125K,
-    CAN_RATE_250K,
-    CAN_RATE_400K,
-    CAN_RATE_500K,
-    CAN_RATE_666K,
-    CAN_RATE_800K,
-    CAN_RATE_1M
+    CAN_RATE_5K = 5,
+    CAN_RATE_10K = 10,
+    CAN_RATE_20K = 20,
+    CAN_RATE_33K = 33,
+    CAN_RATE_40K = 40,
+    CAN_RATE_47K = 47,
+    CAN_RATE_50K = 50,
+    CAN_RATE_62K = 62,
+    CAN_RATE_80K = 80,
+    CAN_RATE_83K = 83,
+    CAN_RATE_95K = 95,
+    CAN_RATE_100K = 100,
+    CAN_RATE_125K = 125,
+    CAN_RATE_250K = 250,
+    CAN_RATE_400K = 400,
+    CAN_RATE_500K = 500,
+    CAN_RATE_666K = 666,
+    CAN_RATE_800K = 800,
+    CAN_RATE_1M = 1000
 };
 
 /**
