@@ -6,12 +6,12 @@ CANZLG2::CANZLG2() : loopOn(false) {}
 CANZLG2::~CANZLG2() {}
 
 CANStatus CANZLG2::OpenChannel(int channel, CANRate baudRate, int type) {
-    char* argv[] = {(char*)&type};
+    void* argv[] = {&type};
     return OpenChannel(channel, baudRate, 1, argv);
 }
 
 CANStatus CANZLG2::OpenChannel(int channel, CANRate baudRate, int argc,
-                               char* argv[]) {
+                               void* argv[]) {
     UINT can_index = channel;
     UINT device_index = 0;
     UINT device_type = 0;
@@ -284,13 +284,13 @@ CANStatus CANZLG2::Write(CANMessage* msg, int count) {
     ZCAN_Transmit_Data* data = new ZCAN_Transmit_Data[count];
     for (int i = 0; i < count; i++) {
         uint8_t flag = 0;
-        if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
+        if (msg[i].type & (unsigned int)CANMSGType::EXTENDED) {
             flag |= 1 << 2;
         }
-        if (msg.type & (unsigned int)CANMSGType::RTR) {
+        if (msg[i].type & (unsigned int)CANMSGType::RTR) {
             flag |= 1 << 1;
         }
-        if (msg.type & (unsigned int)CANMSGType::ERRFRAME) {
+        if (msg[i].type & (unsigned int)CANMSGType::ERRFRAME) {
             flag |= 1;
         }
         data[i].transmit_type = 0;

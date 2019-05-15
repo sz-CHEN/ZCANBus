@@ -5,12 +5,12 @@ CANKvaser::CANKvaser() : loopOn(false) { canInitializeLibrary(); }
 CANKvaser::~CANKvaser() {}
 
 CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int type) {
-    char* argv[] = {(char*)&type};
+    void* argv[] = {&type};
     return OpenChannel(channel, baudRate, 1, argv);
 }
 
 CANStatus CANKvaser::OpenChannel(int channel, CANRate baudRate, int argc,
-                                 char* argv[]) {
+                                 void* argv[]) {
     long freq = 0;
     switch (baudRate) {
         case CANRate::CAN_RATE_10K:

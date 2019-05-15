@@ -28,7 +28,7 @@ class CANKvaser : public CANBase {
      * @see <canlib.h>
      */
     CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
-                          char* argv[]) override;
+                          void* argv[]) override;
     void ReadLoop(
         std::function<void(const CANMessage* msg, CANStatus status)> callback,
         uint64_t interval) override;

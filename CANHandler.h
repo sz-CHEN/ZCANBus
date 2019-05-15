@@ -46,7 +46,7 @@ class DLLEXPORT CANHandler {
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
-                          char* argv[]);
+                          void* argv[]);
 
     /**
      * @brief Read CAN message continuously with async mode.

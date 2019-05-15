@@ -1,17 +1,17 @@
 #include "CANZLG.h"
 #include <cstring>
 namespace ZCANBus {
-CANZLG::CANZLG() : loopOn(false) {}
+CANZLG::CANZLG() : loopOn(false), opened(false) {}
 
 CANZLG::~CANZLG() {}
 
 CANStatus CANZLG::OpenChannel(int channel, CANRate baudRate, int type) {
-    char* argv[] = {(char*)&type};
+    void* argv[] = {&type};
     return OpenChannel(channel, baudRate, 1, argv);
 }
 
 CANStatus CANZLG::OpenChannel(int channel, CANRate baudRate, int argc,
-                              char* argv[]) {
+                              void* argv[]) {
     can_index = channel;
     device_index = 0;
     device_type = 0;
@@ -22,7 +22,15 @@ CANStatus CANZLG::OpenChannel(int channel, CANRate baudRate, int argc,
         device_type = *(UINT*)argv[0];
     }
     if (STATUS_OK != VCI_OpenDevice(device_type, device_index, 0)) {
-        return ERR_DEVICEOPEN;
+        VCI_ERR_INFO errInfo;
+        if (STATUS_OK ==
+            VCI_ReadErrInfo(device_type, device_index, can_index, &errInfo)) {
+            if (ERR_DEVICEOPENED != errInfo.ErrCode) {
+                return errInfo.ErrCode;
+            }
+        } else {
+            return ERR_DEVICEOPEN;
+        }
     }
     VCI_INIT_CONFIG config;
     config.AccCode = 0;
@@ -102,33 +110,49 @@ CANStatus CANZLG::OpenChannel(int channel, CANRate baudRate, int argc,
     }
     if (STATUS_OK !=
         VCI_InitCAN(device_type, device_index, can_index, &config)) {
-        VCI_CloseDevice(device_type, device_index);
-        return ERR_DEVICEOPEN;
+        VCI_ERR_INFO errInfo;
+        if (STATUS_OK ==
+            VCI_ReadErrInfo(device_type, device_index, can_index, &errInfo)) {
+            if (openedCount[{device_type, device_index}] == 0) {
+                VCI_CloseDevice(device_type, device_index);
+            }
+            return errInfo.ErrCode;
+        }
+        if (openedCount[{device_type, device_index}] == 0) {
+            VCI_CloseDevice(device_type, device_index);
+        }
+        return -1;
     }
     if (STATUS_OK != VCI_ResetCAN(device_type, device_index, can_index)) {
         VCI_ERR_INFO errInfo;
         if (STATUS_OK ==
             VCI_ReadErrInfo(device_type, device_index, can_index, &errInfo)) {
-            VCI_CloseDevice(device_type, device_index);
-            if (0 < errInfo.ErrCode) {
-                return errInfo.ErrCode;
+            if (openedCount[{device_type, device_index}] == 0) {
+                VCI_CloseDevice(device_type, device_index);
             }
+            return errInfo.ErrCode;
         }
-        VCI_CloseDevice(device_type, device_index);
+        if (openedCount[{device_type, device_index}] == 0) {
+            VCI_CloseDevice(device_type, device_index);
+        }
         return -1;
     }
     if (STATUS_OK != VCI_StartCAN(device_type, device_index, can_index)) {
         VCI_ERR_INFO errInfo;
         if (STATUS_OK ==
             VCI_ReadErrInfo(device_type, device_index, can_index, &errInfo)) {
-            VCI_CloseDevice(device_type, device_index);
-            if (0 < errInfo.ErrCode) {
-                return errInfo.ErrCode;
+            if (openedCount[{device_type, device_index}] == 0) {
+                VCI_CloseDevice(device_type, device_index);
             }
+            return errInfo.ErrCode;
         }
-        VCI_CloseDevice(device_type, device_index);
+        if (openedCount[{device_type, device_index}] == 0) {
+            VCI_CloseDevice(device_type, device_index);
+        }
         return -1;
     }
+    ++openedCount[{device_type, device_index}];
+    opened = true;
     return 0;
 }
 
@@ -242,15 +266,15 @@ CANStatus CANZLG::Write(CANMessage* msg, int count) {
         data[i].SendType = 0;
         data[i].ID = msg[i].id;
         data[i].DataLen = msg[i].length;
-        if (msg.type & (unsigned int)CANMSGType::RTR) {
-            data.RemoteFlag = 1;
+        if (msg[i].type & (unsigned int)CANMSGType::RTR) {
+            data[i].RemoteFlag = 1;
         } else {
-            data.RemoteFlag = 0;
+            data[i].RemoteFlag = 0;
         }
-        if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
-            data.ExternFlag = 1;
+        if (msg[i].type & (unsigned int)CANMSGType::EXTENDED) {
+            data[i].ExternFlag = 1;
         } else {
-            data.ExternFlag = 0;
+            data[i].ExternFlag = 0;
         }
         memcpy(data[i].Data, msg[i].msg, msg[i].length);
     }
@@ -273,8 +297,15 @@ CANStatus CANZLG::CloseChannel() {
     if (loopOn) {
         EndReadLoop();
     }
-    if (STATUS_OK != VCI_ResetCAN(device_type, device_index, can_index) ||
-        STATUS_OK != VCI_CloseDevice(device_type, device_index)) {
+    auto status = VCI_ResetCAN(device_type, device_index, can_index);
+    if (opened) {
+        opened = false;
+        --openedCount[{device_type, device_index}];
+    }
+    if (openedCount[{device_type, device_index}] == 0) {
+        status &= VCI_CloseDevice(device_type, device_index);
+    }
+    if (STATUS_OK != status) {
         return -1;
     }
     return 0;
@@ -377,11 +408,11 @@ std::string CANZLG::GetErrorText(CANStatus& status) {
             //     return "数据发得太快，Socket缓冲区满了";
             //     break;
             default:
-                return "未知错误";
+                return "未知错误" + std::to_string(status);
                 break;
         }
     } else {
-        return "未知错误";
+        return "未知错误" + std::to_string(status);
     }
 }
 }  // namespace ZCANBus

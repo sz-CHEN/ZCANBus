@@ -1,4 +1,3 @@
-#pragma once
 #ifndef __CANBase_H
 #define __CANBase_H
 #include <functional>
@@ -20,7 +19,7 @@ class CANBase {
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     virtual CANStatus OpenChannel(int channel, CANRate baudRate, int type) {
-        char* argv[]={(char*)&type};
+        void* argv[]={&type};
         return OpenChannel(channel, baudRate, 1, argv);
     };
 
@@ -33,7 +32,7 @@ class CANBase {
      * @return a error code. Generally, 0 means OK. @see CanStatus
      */
     virtual CANStatus OpenChannel(int channel, CANRate baudRate, int argc,
-                                  char* argv[]) = 0;
+                                  void* argv[]) = 0;
 
     /**
      * @brief Read CAN message continuously with async mode.

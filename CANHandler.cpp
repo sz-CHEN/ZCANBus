@@ -23,7 +23,7 @@ CANStatus CANHandler::OpenChannel(int channel, CANRate baudRate, int type) {
 }
 
 CANStatus CANHandler::OpenChannel(int channel, CANRate baudRate, int argc,
-                                  char *argv[]) {
+                                  void *argv[]) {
     return baseCan->OpenChannel(channel, baudRate, argc, argv);
 }
 
