@@ -8,7 +8,7 @@ namespace ZCANBus {
 class CANKvaser : public CANBase {
    private:
     std::thread* th;
-    int handle;
+    CanHandle handle;
     bool loopOn;
 
    public:

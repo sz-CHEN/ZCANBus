@@ -12,7 +12,7 @@ namespace ZCANBus {
 class CANPeak : public CANBase {
    private:
     std::thread* th;
-    int channel;
+    TPCANHandle channel;
     bool loopOn;
 
    public:
