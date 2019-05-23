@@ -9,8 +9,8 @@ CANPeak::CANPeak() {}
 CANPeak::~CANPeak() {}
 
 CANStatus CANPeak::OpenChannel(int channel, CANRate baudRate, int type) {
-        void* argv[]={&type};
-        return OpenChannel(channel, baudRate, 1, argv);
+    void* argv[] = {&type};
+    return OpenChannel(channel, baudRate, 1, argv);
 }
 
 CANStatus CANPeak::OpenChannel(int channel, CANRate baudRate, int argc,
@@ -106,7 +106,8 @@ void CANPeak::ReadLoop(
         while (loopOn) {
 #ifdef _WIN32
             if (WaitForSingleObject(evRecv, interval) == WAIT_OBJECT_0)
-#elif __linux__ || __APPLE__ || __unix__
+#else
+            // #elif __linux__ || __APPLE__ || __unix__
             struct timeval time;
             time.tv_sec = 0;
             time.tv_usec = interval * 1000;
@@ -114,9 +115,9 @@ void CANPeak::ReadLoop(
             FD_SET(evRecv, &fds);
             if (select(evRecv + 1, &fds, NULL, NULL, &time) > 0 &&
                 FD_ISSET(evRecv, &fds))
-#else
-#warning Unsupported OS
-            std::this_thread::sleep_for(std::chrono::milliseconds(interval));
+// #else
+// #warning Unsupported OS
+//             std::this_thread::sleep_for(std::chrono::milliseconds(interval));
 #endif
             {
                 TPCANMsg buf;
@@ -128,7 +129,12 @@ void CANPeak::ReadLoop(
                        loopOn) {
                     msg.id = buf.ID;
                     msg.length = buf.LEN;
-                    msg.type = buf.MSGTYPE;
+                    if (buf.MSGTYPE & PCAN_MESSAGE_STATUS) {
+                        msg.type = (uint32_t)buf.MSGTYPE &
+                                   (uint32_t)CANMSGType::HARDWAREDEF;
+                    } else {
+                        msg.type = buf.MSGTYPE;
+                    }
                     msg.timestamp = timeStamp.millis;
                     memcpy(msg.msg, buf.DATA, msg.length);
                     callback(&msg, status);
@@ -151,7 +157,8 @@ CANStatus CANPeak::ReadOnce(CANMessage& msg, uint64_t timeout) {
     HANDLE evRecv = CreateEvent(NULL, FALSE, FALSE, NULL);
     stat = CAN_SetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
     if (WaitForSingleObject(evRecv, interval) == WAIT_OBJECT_0)
-#elif __linux__ || __APPLE__ || __unix__
+#else
+    // #elif __linux__ || __APPLE__ || __unix__
     int evRecv = 0;
     stat = CAN_GetValue(channel, PCAN_RECEIVE_EVENT, &evRecv, sizeof(evRecv));
     fd_set fds;
@@ -163,9 +170,9 @@ CANStatus CANPeak::ReadOnce(CANMessage& msg, uint64_t timeout) {
     // std::this_thread::sleep_for(std::chrono::milliseconds(interval));
     if (select(evRecv + 1, &fds, NULL, NULL, &time) > 0 &&
         FD_ISSET(evRecv, &fds))
-#else
-#warning Unsupported OS
-    std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
+// #else
+// #warning Unsupported OS
+//     std::this_thread::sleep_for(std::chrono::milliseconds(timeout));
 #endif
     {
         TPCANMsg buf;
@@ -174,7 +181,12 @@ CANStatus CANPeak::ReadOnce(CANMessage& msg, uint64_t timeout) {
         if (stat == PCAN_ERROR_OK) {
             msg.id = buf.ID;
             msg.length = buf.LEN;
-            msg.type = buf.MSGTYPE;
+            if (buf.MSGTYPE & PCAN_MESSAGE_STATUS) {
+                msg.type =
+                    (uint32_t)buf.MSGTYPE & (uint32_t)CANMSGType::HARDWAREDEF;
+            } else {
+                msg.type = buf.MSGTYPE;
+            }
             msg.timestamp = timeStamp.millis;
             memcpy(msg.msg, buf.DATA, msg.length);
         }
@@ -186,7 +198,11 @@ CANStatus CANPeak::Write(const CANMessage& msg) {
     TPCANMsg message;
     message.ID = msg.id;
     message.LEN = msg.length;
-    message.MSGTYPE = msg.type;
+    if (msg.type & (uint32_t)CANMSGType::HARDWAREDEF) {
+        message.MSGTYPE = msg.type & (~(uint32_t)CANMSGType::HARDWAREDEF);
+    } else {
+        message.MSGTYPE = msg.type;
+    }
     memcpy(message.DATA, msg.msg, msg.length);
     return CAN_Write(channel, &message);
 }
@@ -194,12 +210,7 @@ CANStatus CANPeak::Write(const CANMessage& msg) {
 CANStatus CANPeak::Write(CANMessage* msg, int count) {
     CANStatus status = 0;
     for (int i = 0; i < count; ++i) {
-        TPCANMsg message;
-        message.ID = msg[i].id;
-        message.LEN = msg[i].length;
-        message.MSGTYPE = msg[i].type;
-        memcpy(message.DATA, msg[i].msg, msg[i].length);
-        status |= CAN_Write(channel, &message);
+        status |= Write(msg[i]);
     }
     return status;
 }

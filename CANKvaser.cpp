@@ -86,34 +86,49 @@ void CANKvaser::ReadLoop(
         CANMessage msg;
         CANStatus stat;
         while (loopOn) {
-            stat = canReadWait(handle, &msg.id, msg.msg, &msg.length, &msg.type,
-                               &msg.timestamp, interval);
-            unsigned int type = (unsigned int)CANMSGType::STANDARD;
-            if (msg.type & canMSG_EXT) {
-                type |= (unsigned int)CANMSGType::EXTENDED;
-                msg.type &= ~canMSG_EXT;
+            long id;
+            unsigned int length;
+            unsigned int flag;
+            unsigned long time;
+            stat = canReadWait(handle, &id, msg.msg, &length, &flag, &time,
+                               interval);
+            msg.id = (unsigned long)id;
+            msg.length = length;
+            msg.timestamp = time;
+            uint32_t type = (uint32_t)CANMSGType::STANDARD;
+            if (flag & canMSG_EXT) {
+                type |= (uint32_t)CANMSGType::EXTENDED;
+                flag &= ~canMSG_EXT;
             }
-            if (msg.type & canMSG_RTR) {
-                type |= (unsigned int)CANMSGType::RTR;
-                msg.type &= ~canMSG_RTR;
+            if (flag & canMSG_RTR) {
+                type |= (uint32_t)CANMSGType::RTR;
+                flag &= ~canMSG_RTR;
             }
-            if (msg.type & canMSG_ERROR_FRAME) {
-                type |= (unsigned int)CANMSGType::ERRFRAME;
-                msg.type &= ~canMSG_ERROR_FRAME;
+            if (flag & canMSG_ERROR_FRAME) {
+                type |= (uint32_t)CANMSGType::ERRFRAME;
+                flag &= ~canMSG_ERROR_FRAME;
             }
-            if (msg.type & canFDMSG_FDF) {
-                type |= (unsigned int)CANMSGType::FD;
-                msg.type &= ~canFDMSG_FDF;
+            if (flag & canFDMSG_FDF) {
+                type |= (uint32_t)CANMSGType::FD;
+                flag &= ~canFDMSG_FDF;
             }
-            if (msg.type & canFDMSG_BRS) {
-                type |= (unsigned int)CANMSGType::BRS;
-                msg.type &= ~canFDMSG_BRS;
+            if (flag & canFDMSG_BRS) {
+                type |= (uint32_t)CANMSGType::BRS;
+                flag &= ~canFDMSG_BRS;
             }
-            if (msg.type & canFDMSG_ESI) {
-                type |= (unsigned int)CANMSGType::ESI;
-                msg.type &= ~canFDMSG_ESI;
+            if (flag & canFDMSG_ESI) {
+                type |= (uint32_t)CANMSGType::ESI;
+                flag &= ~canFDMSG_ESI;
             }
-            msg.type = type;
+            if (flag & canMSG_STD) {
+                flag &= ~canMSG_STD;
+            }
+            if (flag) {
+                msg.type =
+                    ((uint32_t)CANMSGType::HARDWAREDEF) | ((uint32_t)flag);
+            } else {
+                msg.type = type;
+            }
             callback(&msg, stat);
         }
     });
@@ -126,58 +141,78 @@ void CANKvaser::EndReadLoop() {
 }
 
 CANStatus CANKvaser::ReadOnce(CANMessage& msg, uint64_t timeout) {
-    auto&& status = canReadWait(handle, &msg.id, msg.msg, &msg.length,
-                                &msg.type, &msg.timestamp, timeout);
-    unsigned int type = (unsigned int)CANMSGType::STANDARD;
-    if (msg.type & canMSG_EXT) {
-        type |= (unsigned int)CANMSGType::EXTENDED;
-        msg.type &= ~canMSG_EXT;
+    long id;
+    unsigned int length;
+    unsigned int flag;
+    unsigned long time;
+    auto&& status =
+        canReadWait(handle, &id, msg.msg, &length, &flag, &time, timeout);
+    msg.id = (unsigned long)id;
+    msg.length = length;
+    msg.timestamp = time;
+    uint32_t type = (uint32_t)CANMSGType::STANDARD;
+    if (flag & canMSG_EXT) {
+        type |= (uint32_t)CANMSGType::EXTENDED;
+        flag &= ~canMSG_EXT;
     }
-    if (msg.type & canMSG_RTR) {
-        type |= (unsigned int)CANMSGType::RTR;
-        msg.type &= ~canMSG_RTR;
+    if (flag & canMSG_RTR) {
+        type |= (uint32_t)CANMSGType::RTR;
+        flag &= ~canMSG_RTR;
     }
-    if (msg.type & canMSG_ERROR_FRAME) {
-        type |= (unsigned int)CANMSGType::ERRFRAME;
-        msg.type &= ~canMSG_ERROR_FRAME;
+    if (flag & canMSG_ERROR_FRAME) {
+        type |= (uint32_t)CANMSGType::ERRFRAME;
+        flag &= ~canMSG_ERROR_FRAME;
     }
-    if (msg.type & canFDMSG_FDF) {
-        type |= (unsigned int)CANMSGType::FD;
-        msg.type &= ~canFDMSG_FDF;
+    if (flag & canFDMSG_FDF) {
+        type |= (uint32_t)CANMSGType::FD;
+        flag &= ~canFDMSG_FDF;
     }
-    if (msg.type & canFDMSG_BRS) {
-        type |= (unsigned int)CANMSGType::BRS;
-        msg.type &= ~canFDMSG_BRS;
+    if (flag & canFDMSG_BRS) {
+        type |= (uint32_t)CANMSGType::BRS;
+        flag &= ~canFDMSG_BRS;
     }
-    if (msg.type & canFDMSG_ESI) {
-        type |= (unsigned int)CANMSGType::ESI;
-        msg.type &= ~canFDMSG_ESI;
+    if (flag & canFDMSG_ESI) {
+        type |= (uint32_t)CANMSGType::ESI;
+        flag &= ~canFDMSG_ESI;
     }
-    msg.type = type;
+    if (flag & canMSG_STD) {
+        flag &= ~canMSG_STD;
+    }
+    if (flag) {
+        msg.type = ((uint32_t)CANMSGType::HARDWAREDEF) | ((uint32_t)flag);
+    } else {
+        msg.type = type;
+    }
     return status;
 }
 
 CANStatus CANKvaser::Write(const CANMessage& msg) {
-    unsigned int flag = (unsigned int)CANMSGType::STANDARD;
-    if (msg.type & (unsigned int)CANMSGType::EXTENDED) {
-        flag |= canMSG_EXT;
+    uint32_t flag = canMSG_STD;
+    if (msg.type & (uint32_t)CANMSGType::HARDWAREDEF) {
+        flag = msg.type & (~(uint32_t)CANMSGType::HARDWAREDEF);
+    } else {
+        if ((uint32_t)msg.type & (uint32_t)CANMSGType::EXTENDED) {
+            flag |= canMSG_EXT;
+            flag &= ~canMSG_STD;
+        }
+        if ((uint32_t)msg.type & (uint32_t)CANMSGType::RTR) {
+            flag |= canMSG_RTR;
+        }
+        if ((uint32_t)msg.type & (uint32_t)CANMSGType::ERRFRAME) {
+            flag |= canMSG_ERROR_FRAME;
+        }
+        if ((uint32_t)msg.type & (uint32_t)CANMSGType::FD) {
+            flag |= canFDMSG_FDF;
+        }
+        if ((uint32_t)msg.type & (uint32_t)CANMSGType::BRS) {
+            flag |= canFDMSG_BRS;
+        }
+        if ((uint32_t)msg.type & (uint32_t)CANMSGType::ESI) {
+            flag |= canFDMSG_ESI;
+        }
     }
-    if (msg.type & (unsigned int)CANMSGType::RTR) {
-        flag |= canMSG_RTR;
-    }
-    if (msg.type & (unsigned int)CANMSGType::ERRFRAME) {
-        flag |= canMSG_ERROR_FRAME;
-    }
-    if (msg.type & (unsigned int)CANMSGType::FD) {
-        flag |= canFDMSG_FDF;
-    }
-    if (msg.type & (unsigned int)CANMSGType::BRS) {
-        flag |= canFDMSG_BRS;
-    }
-    if (msg.type & (unsigned int)CANMSGType::ESI) {
-        flag |= canFDMSG_ESI;
-    }
-    return canWriteWait(handle, msg.id, (void*)msg.msg, msg.length, flag, 0xFF);
+    return canWriteWait(handle, (int32_t)msg.id, (void*)msg.msg, msg.length,
+                        flag, 0xFF);
 };
 
 CANStatus CANKvaser::Write(CANMessage* msg, int count) {

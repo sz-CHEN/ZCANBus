@@ -3,7 +3,7 @@
 #include <cstdint>
 namespace ZCANBus {
 
-enum class CANMSGType : unsigned int {
+enum class CANMSGType : uint32_t {
     STANDARD = 0,
     RTR = 1,
     EXTENDED = 1 << 1,
@@ -11,7 +11,7 @@ enum class CANMSGType : unsigned int {
     BRS = 1 << 3,
     ESI = 1 << 4,
     ERRFRAME = 1 << 6,
-    UNKNOWN = 1 << 7
+    HARDWAREDEF = 1U << 31
 };
 
 /**
@@ -19,11 +19,11 @@ enum class CANMSGType : unsigned int {
  * timestamp
  */
 typedef struct {
-    unsigned long timestamp;
-    long id;
-    unsigned int length;
-    unsigned int type;
-    unsigned char msg[8];
+    uint64_t timestamp;
+    uint32_t id;
+    uint32_t type;
+    uint8_t length;
+    uint8_t msg[8];
 } CANMessage;
 
 /**
